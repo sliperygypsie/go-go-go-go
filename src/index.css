@@ -1,3 +1,193 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 15 23 42;
+    --color-primary-hover: 30 41 59;
+    --color-secondary: 148 163 184;
+    --color-accent: 14 165 233;
+    --color-success: 34 197 94;
+    --color-error: 239 68 68;
+    --color-warning: 251 191 36;
+
+    --bg-primary: 248 250 252;
+    --bg-secondary: 255 255 255;
+    --text-primary: 15 23 42;
+    --text-secondary: 71 85 105;
+    --border-color: 226 232 240;
+  }
+
+  .dark {
+    --color-primary: 241 245 249;
+    --color-primary-hover: 226 232 240;
+    --color-secondary: 100 116 139;
+    --color-accent: 56 189 248;
+    --color-success: 74 222 128;
+    --color-error: 248 113 113;
+    --color-warning: 253 224 71;
+
+    --bg-primary: 15 23 42;
+    --bg-secondary: 30 41 59;
+    --text-primary: 241 245 249;
+    --text-secondary: 203 213 225;
+    --border-color: 51 65 85;
+  }
+
+  * {
+    @apply border-border-color;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-primary;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-primary text-white rounded-lg font-medium
+           hover:bg-primary-hover transition-all shadow-lg hover:shadow-xl
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 border-2 border-primary/20 text-text-primary rounded-lg
+           font-medium hover:bg-primary/5 transition-all
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .card {
+    @apply bg-bg-secondary rounded-xl shadow-lg p-6 border border-border-color/50;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 bg-bg-secondary border border-border-color
+           rounded-lg focus:outline-none focus:ring-2 focus:ring-accent
+           focus:border-transparent text-text-primary placeholder:text-text-secondary/50
+           transition-all;
+  }
+
+  .notification {
+    @apply fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-xl
+           flex items-center gap-2 backdrop-blur-sm;
+  }
+}
+
+@layer utilities {
+  .bg-primary {
+    background-color: rgb(var(--color-primary));
+  }
+
+  .bg-primary-hover {
+    background-color: rgb(var(--color-primary-hover));
+  }
+
+  .bg-accent {
+    background-color: rgb(var(--color-accent));
+  }
+
+  .bg-bg-primary {
+    background-color: rgb(var(--bg-primary));
+  }
+
+  .bg-bg-secondary {
+    background-color: rgb(var(--bg-secondary));
+  }
+
+  .text-text-primary {
+    color: rgb(var(--text-primary));
+  }
+
+  .text-text-secondary {
+    color: rgb(var(--text-secondary));
+  }
+
+  .border-border-color {
+    border-color: rgb(var(--border-color));
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .glass-effect {
+    @apply bg-white/10 dark:bg-slate-800/10 backdrop-blur-md border border-white/20;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}

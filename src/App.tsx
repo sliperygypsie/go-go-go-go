@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, UserPlus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { X, UserPlus, CheckCircle2, AlertCircle, Moon, Sun } from 'lucide-react';
 import { supabase, type User } from './lib/supabase';
 
 type NotificationType = 'success' | 'error' | null;
@@ -12,10 +12,30 @@ function App() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState<{ type: NotificationType; message: string } | null>(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('darkMode');
+      return saved ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
 
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
   const fetchUsers = async () => {
     const { data, error } = await supabase
@@ -67,9 +87,17 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-bg-primary to-bg-secondary p-8 transition-colors duration-300">
+      <button
+        onClick={toggleDarkMode}
+        className="fixed top-4 left-4 z-50 p-3 bg-bg-secondary border border-border-color rounded-lg shadow-lg hover:shadow-xl transition-all animate-bounce-in"
+        aria-label="Toggle dark mode"
+      >
+        {darkMode ? <Sun className="text-accent" size={24} /> : <Moon className="text-text-primary" size={24} />}
+      </button>
+
       {notification && (
-        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2 ${
+        <div className={`notification animate-slide-down ${
           notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
         }`}>
           {notification.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
@@ -77,36 +105,36 @@ function App() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto animate-fade-in">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-slate-900 mb-4">
+          <h1 className="text-5xl font-bold text-text-primary mb-4 animate-slide-up">
             User Management
           </h1>
-          <p className="text-slate-600 text-lg mb-8">
+          <p className="text-text-secondary text-lg mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
             Add and manage users with Supabase database integration
           </p>
 
           <Dialog.Root open={open} onOpenChange={setOpen}>
             <Dialog.Trigger asChild>
-              <button className="px-6 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl inline-flex items-center gap-2">
+              <button className="btn-primary inline-flex items-center gap-2 animate-scale-in" style={{ animationDelay: '0.2s' }}>
                 <UserPlus size={20} />
                 Add New User
               </button>
             </Dialog.Trigger>
 
             <Dialog.Portal>
-              <Dialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-              <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl p-6 w-full max-w-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]">
-                <Dialog.Title className="text-2xl font-bold text-slate-900 mb-2">
+              <Dialog.Overlay className="fixed inset-0 bg-black/50 dark:bg-black/70 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+              <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-bg-secondary border border-border-color rounded-xl shadow-2xl p-6 w-full max-w-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]">
+                <Dialog.Title className="text-2xl font-bold text-text-primary mb-2">
                   Add New User
                 </Dialog.Title>
-                <Dialog.Description className="text-slate-600 mb-6">
+                <Dialog.Description className="text-text-secondary mb-6">
                   Enter the user's information to save it to the database.
                 </Dialog.Description>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1">
+                    <label htmlFor="name" className="block text-sm font-medium text-text-primary mb-1">
                       Name
                     </label>
                     <input
@@ -115,13 +143,13 @@ function App() {
                       placeholder="Enter your name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                      className="input"
                       disabled={loading}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+                    <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-1">
                       Email
                     </label>
                     <input
@@ -130,7 +158,7 @@ function App() {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                      className="input"
                       disabled={loading}
                     />
                   </div>
@@ -139,7 +167,7 @@ function App() {
                     <Dialog.Close asChild>
                       <button
                         type="button"
-                        className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                        className="flex-1 btn-secondary"
                         disabled={loading}
                       >
                         Cancel
@@ -147,7 +175,7 @@ function App() {
                     </Dialog.Close>
                     <button
                       type="submit"
-                      className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 btn-primary"
                       disabled={loading}
                     >
                       {loading ? 'Saving...' : 'Submit'}
@@ -157,7 +185,7 @@ function App() {
 
                 <Dialog.Close asChild>
                   <button
-                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute top-4 right-4 text-text-secondary hover:text-text-primary transition-colors"
                     aria-label="Close"
                   >
                     <X size={20} />
@@ -168,24 +196,31 @@ function App() {
           </Dialog.Root>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="px-6 py-4 bg-slate-900 text-white">
-            <h2 className="text-xl font-semibold">Registered Users ({users.length})</h2>
+        <div className="card animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center justify-between mb-4 pb-4 border-b border-border-color">
+            <h2 className="text-2xl font-semibold text-text-primary">Registered Users</h2>
+            <span className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium">
+              {users.length}
+            </span>
           </div>
-          <div className="divide-y divide-slate-200">
+          <div className="space-y-3">
             {users.length === 0 ? (
-              <div className="px-6 py-12 text-center text-slate-500">
+              <div className="py-12 text-center text-text-secondary animate-fade-in">
                 No users yet. Add your first user to get started!
               </div>
             ) : (
-              users.map((user) => (
-                <div key={user.id} className="px-6 py-4 hover:bg-slate-50 transition-colors">
+              users.map((user, index) => (
+                <div
+                  key={user.id}
+                  className="p-4 rounded-lg border border-border-color hover:border-accent/50 bg-bg-primary hover:bg-accent/5 transition-all duration-200 animate-slide-up"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-slate-900">{user.name}</h3>
-                      <p className="text-slate-600">{user.email}</p>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-text-primary mb-1">{user.name}</h3>
+                      <p className="text-text-secondary text-sm">{user.email}</p>
                     </div>
-                    <div className="text-sm text-slate-500">
+                    <div className="text-xs text-text-secondary bg-bg-secondary px-3 py-1 rounded-full border border-border-color">
                       {new Date(user.created_at).toLocaleDateString()}
                     </div>
                   </div>
