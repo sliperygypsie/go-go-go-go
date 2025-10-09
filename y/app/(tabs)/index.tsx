@@ -1,98 +1,232 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
+import { useState, useEffect } from 'react';
+import { StyleSheet, FlatList, TouchableOpacity, View, ActivityIndicator, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { NoteCard } from '@/components/note-card';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
+
+interface Note {
+  id: string;
+  title: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+}
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
+  useEffect(() => {
+    initUser();
+  }, []);
+
+  const initUser = async () => {
+    const tempUserId = 'demo-user-' + Math.random().toString(36).substring(7);
+    setUserId(tempUserId);
+    loadNotes(tempUserId);
+  };
+
+  const loadNotes = async (uid: string) => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setNotes(data || []);
+    } catch (error) {
+      console.error('Error loading notes:', error);
+      Alert.alert('Error', 'Failed to load notes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNotePress = (note: Note) => {
+    Alert.alert(
+      note.title || 'Untitled',
+      note.content || 'No content',
+      [
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => handleDeleteNote(note.id),
+        },
+        { text: 'Close', style: 'cancel' },
+      ]
+    );
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      const { error } = await supabase.from('notes').delete().eq('id', noteId);
+
+      if (error) throw error;
+
+      setNotes(notes.filter((n) => n.id !== noteId));
+      Alert.alert('Success', 'Note deleted');
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      Alert.alert('Error', 'Failed to delete note');
+    }
+  };
+
+  const handleCreateNote = () => {
+    Alert.prompt(
+      'New Note',
+      'Enter note title:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Create',
+          onPress: async (title) => {
+            if (!title || !userId) return;
+
+            Alert.prompt(
+              'Note Content',
+              'Enter note content:',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Save',
+                  onPress: async (content) => {
+                    try {
+                      const { data, error } = await supabase
+                        .from('notes')
+                        .insert({
+                          title: title || 'Untitled',
+                          content: content || '',
+                          user_id: userId,
+                        })
+                        .select()
+                        .single();
+
+                      if (error) throw error;
+
+                      setNotes([data, ...notes]);
+                      Alert.alert('Success', 'Note created');
+                    } catch (error) {
+                      console.error('Error creating note:', error);
+                      Alert.alert('Error', 'Failed to create note');
+                    }
+                  },
+                },
+              ],
+              'plain-text'
+            );
+          },
+        },
+      ],
+      'plain-text'
+    );
+  };
+
+  if (loading) {
+    return (
+      <ThemedView style={styles.centered}>
+        <ActivityIndicator size="large" color={isDark ? '#fff' : '#000'} />
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    );
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <View style={styles.header}>
+        <ThemedText type="title">My Notes</ThemedText>
+        <TouchableOpacity
+          style={[
+            styles.addButton,
+            { backgroundColor: isDark ? '#0066cc' : '#007AFF' },
+          ]}
+          onPress={handleCreateNote}>
+          <IconSymbol name="plus" size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
+      {notes.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <IconSymbol
+            name="doc.text"
+            size={64}
+            color={isDark ? '#666' : '#ccc'}
+          />
+          <ThemedText style={styles.emptyText}>No notes yet</ThemedText>
+          <ThemedText style={styles.emptySubtext}>
+            Tap the + button to create your first note
+          </ThemedText>
+        </View>
+      ) : (
+        <FlatList
+          data={notes}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <NoteCard
+              id={item.id}
+              title={item.title}
+              content={item.content}
+              createdAt={item.created_at}
+              onPress={() => handleNotePress(item)}
+            />
+          )}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 60,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  addButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContent: {
+    padding: 16,
+    paddingTop: 0,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 100,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    opacity: 0.6,
+    marginTop: 8,
+    textAlign: 'center',
   },
 });
