@@ -1,0 +1,11 @@
+{
+  "name": "go-go-go-go",
+  "version": "0.0.0",
+  "private": true,
+  "devDependencies": {
+    "typescript": "latest"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}
