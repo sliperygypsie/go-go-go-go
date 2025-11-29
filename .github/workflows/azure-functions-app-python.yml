@@ -1,4 +1,5 @@
-# jobs:
+#![Coverage](https://codecov.io/gh/sliperygypsie/go-go-go-go/branch/main/graph/badge.svg)
+ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
