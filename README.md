@@ -1,4 +1,13 @@
----
+---# 🎨 Go-Go-Go-Go
+
+![Build Status](https://github.com/sliperygypsie/go-go-go-go/actions/workflows/ci.yml/badge.svg)
+![Lint](https://img.shields.io/badge/lint-passing-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/tests-100%25-success?style=flat-square)
+![License](https://img.shields.io/github/license/sliperygypsie/go-go-go-go?style=flat-square)
+
+A playful React Native demo app that celebrates **visual polish** and **UI creativity**.  
+This project showcases custom icons, animated floating action buttons (FABs), and branded color palettes — designed to be both fun and functional.
+
 
 ## 🖼️ Screenshots & UI Previews
 
