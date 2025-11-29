@@ -1,4 +1,5 @@
----# 🎨 Go-Go-Go-Go
+
+--# 🎨 Go-Go-Go-Go
 
 ![Build Status](https://github.com/sliperygypsie/go-go-go-go/actions/workflows/ci.yml/badge.svg)
 ![Lint](https://img.shields.io/badge/lint-passing-brightgreen?style=flat-square)
